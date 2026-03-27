@@ -1,0 +1,807 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>スキル分析・育成計画 レポートジェネレーター</title>
+  <style>
+    /* ==============================================
+       カラーパレット（会社テーマカラー準拠）
+       --green:      #02993B  メインカラー
+       --orange:     #F39346  アクセントカラー
+       --white:      #FFFFFF  背景色
+       --text:       #212121  文字色
+       --gray:       #6b7280  補助テキスト
+       --light:      #f3f4f6  ページ背景
+       --green-light:#e6f5ec  グリーン薄（カード背景など）
+       --orange-light:#fef3e8 オレンジ薄（ハイライトなど）
+    ============================================== */
+
+    /* ここにアプリUI用CSSを追記していく（タスク6-1で完成） */
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: "Noto Sans JP", "Yu Gothic UI", "Hiragino Sans", "Meiryo", sans-serif;
+      background: #f3f4f6;
+      color: #212121;
+    }
+
+    .app {
+      max-width: 860px;
+      margin: 0 auto;
+      padding-bottom: 80px;
+    }
+
+    /* ヘッダー */
+    .app-header {
+      background: #02993B;
+      color: #fff;
+      padding: 28px 32px 24px;
+      position: relative;
+      overflow: hidden;
+    }
+    .app-header::after {
+      content: '';
+      position: absolute;
+      right: -40px;
+      top: -40px;
+      width: 180px;
+      height: 180px;
+      background: rgba(255,255,255,.08);
+      border-radius: 50%;
+      pointer-events: none;
+    }
+    .app-header h1 {
+      font-size: 1.35rem;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      margin-bottom: 6px;
+    }
+    .app-header p {
+      font-size: 0.82rem;
+      opacity: 0.88;
+      letter-spacing: 0.01em;
+    }
+    .app-header-label {
+      display: inline-block;
+      font-size: 0.72rem;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      background: rgba(255,255,255,.2);
+      border: 1px solid rgba(255,255,255,.4);
+      color: #fff;
+      padding: 2px 10px;
+      border-radius: 20px;
+      margin-bottom: 10px;
+    }
+
+    /* ステップナビゲーション */
+    .step-nav {
+      display: flex;
+      background: #fff;
+      border-bottom: 2px solid #e5e7eb;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 2px 6px rgba(0,0,0,.06);
+    }
+    .step-btn {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      padding: 12px 8px 10px;
+      border: none;
+      border-bottom: 3px solid transparent;
+      background: none;
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 0.78rem;
+      color: #9ca3af;
+      transition: color .2s, border-color .2s, background .2s;
+    }
+    .step-btn:hover {
+      background: #f9fafb;
+      color: #6b7280;
+    }
+    .step-num {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      font-size: 0.75rem;
+      font-weight: 700;
+      background: #e5e7eb;
+      color: #9ca3af;
+      transition: background .2s, color .2s;
+    }
+    /* 現在のステップ */
+    .step-btn.active {
+      color: #02993B;
+      border-bottom-color: #02993B;
+      font-weight: 600;
+    }
+    .step-btn.active .step-num {
+      background: #02993B;
+      color: #fff;
+    }
+    /* 完了済みステップ */
+    .step-btn.done {
+      color: #F39346;
+    }
+    .step-btn.done .step-num {
+      background: #F39346;
+      color: transparent;  /* 数字を隠す */
+      font-size: 0.7rem;
+      position: relative;
+    }
+    .step-btn.done .step-num::before {
+      content: '✓';
+      position: absolute;
+      color: #fff;
+    }
+
+    /* カード */
+    .card {
+      background: #fff;
+      margin: 24px 16px;
+      border-radius: 8px;
+      padding: 28px;
+      box-shadow: 0 1px 4px rgba(0,0,0,.08);
+    }
+    .card h2 {
+      font-size: 1.1rem;
+      color: #02993B;
+      margin-bottom: 16px;
+    }
+
+    /* フィールドグリッド */
+    .field-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+    .field label {
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: #374151;
+    }
+    .field input,
+    .field select,
+    .field textarea {
+      border: 1px solid #d1d5db;
+      border-radius: 6px;
+      padding: 8px 10px;
+      font-size: 0.9rem;
+      font-family: inherit;
+      color: #212121;
+      background: #fff;
+      transition: border-color .15s, box-shadow .15s;
+    }
+    .field input:focus,
+    .field select:focus,
+    .field textarea:focus {
+      outline: none;
+      border-color: #02993B;
+      box-shadow: 0 0 0 3px rgba(2,153,59,.12);
+    }
+    .field textarea { resize: vertical; }
+    .req { color: #e53e3e; }
+
+    /* エラーメッセージ */
+    .error-msg {
+      margin-top: 10px;
+      padding: 10px 14px;
+      background: #fff5f5;
+      border: 1px solid #feb2b2;
+      border-radius: 6px;
+      color: #c53030;
+      font-size: 0.85rem;
+    }
+
+    /* ボタン行 */
+    .btn-row {
+      display: flex;
+      gap: 12px;
+      justify-content: flex-end;
+      margin-top: 24px;
+    }
+    .btn-pri {
+      background: #02993B;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      padding: 10px 28px;
+      font-size: 0.9rem;
+      font-family: inherit;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background .15s;
+    }
+    .btn-pri:hover { background: #027a30; }
+    .btn-sec {
+      background: #f3f4f6;
+      color: #374151;
+      border: 1px solid #d1d5db;
+      border-radius: 6px;
+      padding: 10px 28px;
+      font-size: 0.9rem;
+      font-family: inherit;
+      cursor: pointer;
+      transition: background .15s;
+    }
+    .btn-sec:hover { background: #e5e7eb; }
+
+    /* テーブル */
+    .tbl-wrap {
+      overflow-x: auto;
+      margin-bottom: 12px;
+      border-radius: 6px;
+      border: 1px solid #e5e7eb;
+    }
+    .tbl-wrap table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.83rem;
+      white-space: nowrap;
+    }
+    .tbl-wrap thead th {
+      background: #f9fafb;
+      padding: 9px 10px;
+      text-align: left;
+      border-bottom: 2px solid #e5e7eb;
+      font-weight: 600;
+      color: #374151;
+    }
+    .tbl-wrap tbody td {
+      padding: 6px 8px;
+      border-bottom: 1px solid #f3f4f6;
+      vertical-align: middle;
+    }
+    .tbl-wrap tbody tr:last-child td { border-bottom: none; }
+    .tbl-wrap tbody tr:hover td { background: #f9fafb; }
+    .tbl-wrap input,
+    .tbl-wrap select {
+      width: 100%;
+      border: 1px solid #e5e7eb;
+      border-radius: 4px;
+      padding: 5px 7px;
+      font-size: 0.82rem;
+      font-family: inherit;
+      color: #212121;
+      background: #fff;
+      transition: border-color .15s;
+    }
+    .tbl-wrap input:focus,
+    .tbl-wrap select:focus {
+      outline: none;
+      border-color: #02993B;
+    }
+
+    /* 案件カード */
+    .proj-card {
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      padding: 14px 16px;
+      margin-bottom: 10px;
+      background: #fff;
+    }
+    .proj-row1 {
+      display: flex;
+      gap: 12px;
+      align-items: flex-end;
+      margin-bottom: 12px;
+    }
+    .proj-field-name    { flex: 2; }
+    .proj-field-overview { flex: 3; }
+    .proj-row1 .del-btn { flex-shrink: 0; margin-bottom: 1px; }
+    .proj-row2 {
+      display: flex;
+      gap: 12px;
+      align-items: flex-end;
+    }
+    .proj-field-period  { flex: 0 0 auto; }
+    .proj-field-skill   { flex: 1; min-width: 180px; }
+    .proj-row2 .field:last-child { flex: 0 0 80px; }
+
+    /* 実施期間インライン入力 */
+    .period-inputs {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .period-inputs input[type="month"] {
+      width: 130px;
+      border: 1px solid #e5e7eb;
+      border-radius: 4px;
+      padding: 5px 7px;
+      font-size: 0.82rem;
+      font-family: inherit;
+      color: #212121;
+      background: #fff;
+      transition: border-color .15s;
+    }
+    .period-inputs input[type="month"]:focus {
+      outline: none;
+      border-color: #02993B;
+    }
+    .period-sep { color: #6b7280; font-size: 0.8rem; }
+
+    /* 行追加・削除ボタン */
+    .add-btn {
+      margin-top: 8px;
+      background: #e6f5ec;
+      color: #02993B;
+      border: 1px dashed #02993B;
+      border-radius: 6px;
+      padding: 7px 18px;
+      font-size: 0.85rem;
+      font-family: inherit;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background .15s;
+    }
+    .add-btn:hover { background: #d0edda; }
+    .del-btn {
+      background: #fff5f5;
+      color: #c53030;
+      border: 1px solid #feb2b2;
+      border-radius: 4px;
+      padding: 4px 9px;
+      font-size: 0.75rem;
+      font-family: inherit;
+      cursor: pointer;
+      transition: background .15s;
+    }
+    .del-btn:hover { background: #fed7d7; }
+
+    /* レポート生成ボタン */
+    .btn-gen {
+      background: #F39346;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      padding: 10px 32px;
+      font-size: 0.95rem;
+      font-family: inherit;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background .15s;
+    }
+    .btn-gen:hover { background: #e07d2f; }
+
+    /* メンバーカード */
+    .member-card {
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      padding: 14px 16px;
+      margin-bottom: 10px;
+      background: #fff;
+    }
+    .member-row1 {
+      display: flex;
+      gap: 12px;
+      align-items: flex-end;
+      margin-bottom: 12px;
+    }
+    .member-field-name   { flex: 0 0 150px; }
+    .member-field-skill  { flex: 2; }
+    .member-row2 {
+      display: flex;
+      gap: 12px;
+      align-items: flex-end;
+    }
+    .member-field-lv     { flex: 0 0 80px; }
+    .member-field-measure { flex: 1; }
+    .member-row2 .del-btn { flex-shrink: 0; margin-bottom: 1px; }
+
+    /* セクションラベル（育成対象者/育成施策 見出し） */
+    .section-label {
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: #374151;
+      margin-bottom: 8px;
+    }
+
+    /* 育成対象者・育成施策 行 */
+    .trainee-row {
+      display: flex;
+      gap: 12px;
+      align-items: flex-end;
+      margin-bottom: 8px;
+    }
+    .trainee-row .field { flex: 1; margin-bottom: 0; }
+    .trainee-row .field:first-child { flex: 0 0 180px; }
+    .trainee-row .del-btn {
+      flex-shrink: 0;
+      align-self: center;
+      margin-top: calc(0.82rem * 1.4 + 5px); /* ラベル行高さ分下げて入力欄中央に揃える */
+    }
+
+    /* 開発用プレースホルダー */
+    .placeholder-note {
+      color: #6b7280;
+      font-size: 0.85rem;
+      font-style: italic;
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+
+    <!-- ヘッダー -->
+    <div class="app-header">
+      <div class="app-header-label">IT人財育成ツール</div>
+      <h1>スキル分析・育成計画 レポートジェネレーター</h1>
+      <p>フォームに入力してレポートを生成 → HTMLファイルとしてダウンロード（サーバー不要）</p>
+    </div>
+
+    <!-- ステップナビゲーション -->
+    <nav class="step-nav">
+      <button class="step-btn active" onclick="goStep(0)">
+        <span class="step-num">1</span>
+        <span>基本情報</span>
+      </button>
+      <button class="step-btn" onclick="goStep(1)">
+        <span class="step-num">2</span>
+        <span>予定案件</span>
+      </button>
+      <button class="step-btn" onclick="goStep(2)">
+        <span class="step-num">3</span>
+        <span>育成方針</span>
+      </button>
+      <button class="step-btn" onclick="goStep(3)">
+        <span class="step-num">4</span>
+        <span>育成目標</span>
+      </button>
+    </nav>
+
+    <!-- Step1: 基本情報 -->
+    <div id="step0" class="step-panel">
+      <div class="card">
+        <h2>Step 1 — 基本情報</h2>
+        <div class="field-grid">
+          <div class="field">
+            <label for="f-year">年度 <span class="req">*</span></label>
+            <input type="text" id="f-year" placeholder="例: 2025年度">
+          </div>
+          <div class="field">
+            <label for="f-team">部門 / チーム名 <span class="req">*</span></label>
+            <select id="f-team">
+              <option value="">-- 選択してください --</option>
+              <option>デジタル基盤グループ・オープンシステム基盤チーム</option>
+              <option>デジタル基盤グループ・ネットワーク基盤チーム</option>
+              <option>デジタル基盤グループ・コールセンター基盤チーム</option>
+              <option>デジタル基盤グループ・クラウド推進チーム</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="f-leader">リーダー名 <span class="req">*</span></label>
+            <input type="text" id="f-leader" placeholder="例: 山田 太郎">
+          </div>
+          <div class="field">
+            <label for="f-period">対象期間</label>
+            <input type="text" id="f-period">
+          </div>
+          <div class="field">
+            <label for="f-date">作成日</label>
+            <input type="date" id="f-date">
+          </div>
+          <div class="field">
+            <label for="f-theme">重点テーマ</label>
+            <input type="text" id="f-theme" placeholder="例: クラウド移行、内製化推進">
+          </div>
+        </div>
+        <div class="field">
+          <label for="f-scope">担当領域・役割概要</label>
+          <textarea id="f-scope" rows="4" placeholder="チームの担当領域や役割を記入してください（300文字程度）"></textarea>
+        </div>
+        <div id="err-step0" class="error-msg" hidden></div>
+        <div class="btn-row">
+          <button class="btn-pri" onclick="next(0)">次へ →</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step2: 予定案件（タスク3-2） -->
+    <div id="step1" class="step-panel" hidden>
+      <div class="card">
+        <h2>Step 2 — 予定案件</h2>
+        <div id="proj-body"></div>
+        <button class="add-btn" onclick="addProj()">＋ 案件を追加</button>
+        <div class="btn-row">
+          <button class="btn-sec" onclick="goStep(0)">← 戻る</button>
+          <button class="btn-pri" onclick="next(1)">次へ →</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step3: 育成方針 -->
+    <div id="step2" class="step-panel" hidden>
+      <div class="card">
+        <h2>Step 3 — 育成方針</h2>
+        <div class="field-grid">
+          <div class="field">
+            <label for="f-focus">重点スキル領域</label>
+            <input type="text" id="f-focus" placeholder="例: クラウド、セキュリティ">
+          </div>
+          <div class="field">
+            <label for="f-vision">目指す人材像</label>
+            <input type="text" id="f-vision" placeholder="例: クラウドを自律的に活用できるエンジニア">
+          </div>
+        </div>
+        <div class="field" style="margin-bottom:16px;">
+          <label for="f-gap">現状の課題・ギャップ</label>
+          <textarea id="f-gap" rows="4" placeholder="現状のスキルレベルと目標とのギャップを記入してください"></textarea>
+        </div>
+        <div class="field" style="margin-bottom:20px;">
+          <label for="f-policy">育成方針（自由記述）</label>
+          <textarea id="f-policy" rows="5" placeholder="具体的な育成の方向性や取り組みを記入してください"></textarea>
+        </div>
+
+        <!-- 育成対象者・育成施策（複数行） -->
+        <div class="section-label">育成対象者 / 育成施策</div>
+        <div id="trainee-body"></div>
+        <button class="add-btn" onclick="addTrainee()">＋ 追加</button>
+
+        <div class="btn-row">
+          <button class="btn-sec" onclick="goStep(1)">← 戻る</button>
+          <button class="btn-pri" onclick="next(2)">次へ →</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step4: メンバー別育成目標 -->
+    <div id="step3" class="step-panel" hidden>
+      <div class="card">
+        <h2>Step 4 — メンバー別育成目標</h2>
+        <div id="member-body"></div>
+        <button class="add-btn" onclick="addMember()">＋ メンバーを追加</button>
+        <div class="btn-row">
+          <button class="btn-sec" onclick="goStep(2)">← 戻る</button>
+          <button class="btn-gen" onclick="generate()">レポートを生成</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- プレビューエリア（タスク3-5） -->
+    <div id="preview-wrap" hidden>
+      <p class="placeholder-note">（プレビューはタスク3-5で追加）</p>
+    </div>
+
+  </div>
+
+  <script>
+    // ==============================================
+    // 状態変数
+    // ==============================================
+    let currentStep = 0;
+    let projIds     = [];
+    let traineeIds  = [];
+    let memberIds   = [];
+    let reportHTML  = '';
+
+    // ==============================================
+    // ステップ切り替え（タスク4-1で完成）
+    // ==============================================
+    function goStep(n) {
+      document.getElementById('step' + currentStep).setAttribute('hidden', '');
+      document.querySelectorAll('.step-btn').forEach((btn, i) => {
+        btn.classList.toggle('active', i === n);
+      });
+      currentStep = n;
+      document.getElementById('step' + n).removeAttribute('hidden');
+    }
+
+    // ==============================================
+    // 案件行 追加・削除
+    // ==============================================
+    function addProj() {
+      const id   = Date.now();
+      projIds.push(id);
+      const body = document.getElementById('proj-body');
+      const div  = document.createElement('div');
+      div.id     = 'proj-row-' + id;
+      div.className = 'proj-card';
+      div.innerHTML = `
+        <div class="proj-row1">
+          <div class="field proj-field-name">
+            <label>案件名 <span class="req">*</span></label>
+            <input type="text" id="pnm${id}" placeholder="案件名">
+          </div>
+          <div class="field proj-field-overview">
+            <label>概要</label>
+            <input type="text" id="pov${id}" placeholder="案件の概要">
+          </div>
+          <button class="del-btn" onclick="delRow(projIds,${id},'proj-row-${id}')">✕ 削除</button>
+        </div>
+        <div class="proj-row2">
+          <div class="field proj-field-period">
+            <label>実施期間</label>
+            <div class="period-inputs">
+              <input type="month" id="pts${id}">
+              <span class="period-sep">〜</span>
+              <input type="month" id="pte${id}">
+            </div>
+          </div>
+          <div class="field proj-field-skill">
+            <label>必要スキル領域</label>
+            <select id="psk${id}">
+              <option value="">-- 選択 --</option>
+              <optgroup label="オープンシステム">
+                <option>オープンシステム・H/W（サーバー）</option>
+                <option>オープンシステム・OS（サーバー）</option>
+                <option>オープンシステム・運用監視システム</option>
+                <option>オープンシステム・セキュリティ（サーバー）</option>
+                <option>オープンシステム・シンクライアント基盤</option>
+                <option>オープンシステム・開発言語</option>
+                <option>オープンシステム・自動化</option>
+                <option>オープンシステム・データ分析</option>
+              </optgroup>
+              <optgroup label="ネットワーク">
+                <option>ネットワーク・WAN/LAN環境</option>
+                <option>ネットワーク・ネットワーク関連システム</option>
+                <option>ネットワーク・セキュリティ（N/W）</option>
+                <option>ネットワーク・ネットワーク管理</option>
+                <option>ネットワーク・ログ管理</option>
+              </optgroup>
+              <optgroup label="コールセンター基盤">
+                <option>コールセンター基盤・音声系システム</option>
+                <option>コールセンター基盤・CTI基盤</option>
+                <option>コールセンター基盤・アプリケーション基盤</option>
+              </optgroup>
+              <optgroup label="クラウド推進">
+                <option>クラウド推進・システム戦略策定</option>
+                <option>クラウド推進・クラウド基盤</option>
+                <option>クラウド推進・AI基盤</option>
+                <option>クラウド推進・アーキテクチャ策定</option>
+              </optgroup>
+            </select>
+          </div>
+          <div class="field">
+            <label>重要度</label>
+            <select id="ppr${id}">
+              <option>高</option>
+              <option>中</option>
+              <option>低</option>
+            </select>
+          </div>
+        </div>
+      `;
+      body.appendChild(div);
+    }
+
+    // ==============================================
+    // メンバー行 追加
+    // ==============================================
+    function addMember() {
+      const id   = Date.now();
+      memberIds.push(id);
+      const body = document.getElementById('member-body');
+      const div  = document.createElement('div');
+      div.id        = 'member-row-' + id;
+      div.className = 'member-card';
+      const lvOptions = '<option>1</option><option>2</option><option>3</option><option>4</option><option>5</option>';
+      div.innerHTML = `
+        <div class="member-row1">
+          <div class="field member-field-name">
+            <label>氏名 <span class="req">*</span></label>
+            <input type="text" id="mnm${id}" placeholder="山田 太郎">
+          </div>
+          <div class="field member-field-skill">
+            <label>育成対象スキル</label>
+            <input type="text" id="msk${id}" placeholder="例: AWS、Python">
+          </div>
+          <div class="field member-field-lv">
+            <label>現在 Lv</label>
+            <select id="mcl${id}">${lvOptions}</select>
+          </div>
+          <div class="field member-field-lv">
+            <label>目標 Lv</label>
+            <select id="mgl${id}">${lvOptions}</select>
+          </div>
+        </div>
+        <div class="member-row2">
+          <div class="field member-field-measure">
+            <label>主な育成施策</label>
+            <input type="text" id="mms${id}" placeholder="例: AWS資格取得、OJT、社外研修">
+          </div>
+          <button class="del-btn" onclick="delRow(memberIds,${id},'member-row-${id}')">✕ 削除</button>
+        </div>
+      `;
+      body.appendChild(div);
+    }
+
+    // ==============================================
+    // 育成対象者・育成施策 行追加
+    // ==============================================
+    function addTrainee() {
+      const id   = Date.now();
+      traineeIds.push(id);
+      const body = document.getElementById('trainee-body');
+      const div  = document.createElement('div');
+      div.id        = 'trainee-row-' + id;
+      div.className = 'trainee-row';
+      div.innerHTML = `
+        <div class="field">
+          <label>育成対象者（氏名）</label>
+          <input type="text" id="tnm${id}" placeholder="例: 山田 太郎">
+        </div>
+        <div class="field">
+          <label>育成施策</label>
+          <input type="text" id="tms${id}" placeholder="例: AWS資格取得、OJT">
+        </div>
+        <button class="del-btn" onclick="delRow(traineeIds,${id},'trainee-row-${id}')">✕</button>
+      `;
+      body.appendChild(div);
+    }
+
+    // ==============================================
+    // 行削除（案件・メンバー共通）
+    // ==============================================
+    function delRow(arr, id, rowId) {
+      const idx = arr.indexOf(id);
+      if (idx !== -1) arr.splice(idx, 1);
+      const row = document.getElementById(rowId);
+      if (row) row.remove();
+    }
+
+    // ==============================================
+    // 起動時初期化
+    // ==============================================
+    (function init() {
+      const now = new Date();
+      const fy  = now.getMonth() >= 3          // 4月(3)以降なら当年度、3月(2)以前なら前年度
+                  ? now.getFullYear()
+                  : now.getFullYear() - 1;
+
+      // 対象期間のプレースホルダー: 当年度〜+2年度（3年分）
+      document.getElementById('f-period').placeholder = `例: ${fy}年度〜${fy + 2}年度`;
+
+      // 作成日のデフォルト値: 当日
+      document.getElementById('f-date').value = now.toISOString().slice(0, 10);
+
+      // 案件テーブルの初期行
+      addProj();
+
+      // 育成対象者・育成施策の初期行
+      addTrainee();
+
+      // メンバー育成目標の初期行
+      addMember();
+    })();
+
+    // バリデーション付きステップ進行（タスク4-1で完成）
+    function next(n) {
+      if (n === 0) {
+        const year   = document.getElementById('f-year').value.trim();
+        const team   = document.getElementById('f-team').value.trim();
+        const leader = document.getElementById('f-leader').value.trim();
+        const errEl  = document.getElementById('err-step0');
+        if (!year || !team || !leader) {
+          errEl.textContent = '年度・部門 / チーム名・リーダー名はすべて必須項目です。';
+          errEl.removeAttribute('hidden');
+          return;
+        }
+        errEl.setAttribute('hidden', '');
+      }
+      document.querySelectorAll('.step-btn')[n].classList.add('done');
+      goStep(n + 1);
+    }
+  </script>
+</body>
+</html>
