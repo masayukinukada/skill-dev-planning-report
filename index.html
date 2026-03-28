@@ -7,17 +7,15 @@
   <style>
     /* ==============================================
        カラーパレット（会社テーマカラー準拠）
-       --green:      #02993B  メインカラー
-       --orange:     #F39346  アクセントカラー
-       --white:      #FFFFFF  背景色
-       --text:       #212121  文字色
-       --gray:       #6b7280  補助テキスト
-       --light:      #f3f4f6  ページ背景
-       --green-light:#e6f5ec  グリーン薄（カード背景など）
-       --orange-light:#fef3e8 オレンジ薄（ハイライトなど）
+       --green:       #02993B  メインカラー
+       --orange:      #F39346  アクセントカラー
+       --white:       #FFFFFF  背景色
+       --text:        #212121  文字色
+       --gray:        #6b7280  補助テキスト
+       --light:       #f3f4f6  ページ背景
+       --green-light: #e6f5ec  グリーン薄（カード背景など）
+       --orange-light:#fef3e8  オレンジ薄（ハイライトなど）
     ============================================== */
-
-    /* ここにアプリUI用CSSを追記していく（タスク6-1で完成） */
 
     * {
       box-sizing: border-box;
@@ -29,6 +27,7 @@
       font-family: "Noto Sans JP", "Yu Gothic UI", "Hiragino Sans", "Meiryo", sans-serif;
       background: #f3f4f6;
       color: #212121;
+      line-height: 1.6;
     }
 
     .app {
@@ -159,8 +158,11 @@
     }
     .card h2 {
       font-size: 1.1rem;
+      font-weight: 700;
       color: #02993B;
-      margin-bottom: 16px;
+      margin-bottom: 20px;
+      padding-bottom: 12px;
+      border-bottom: 2px solid #e6f5ec;
     }
 
     /* フィールドグリッド */
@@ -183,6 +185,7 @@
     .field input,
     .field select,
     .field textarea {
+      width: 100%;
       border: 1px solid #d1d5db;
       border-radius: 6px;
       padding: 8px 10px;
@@ -399,7 +402,7 @@
       margin-bottom: 12px;
     }
     .member-field-name   { flex: 0 0 150px; }
-    .member-field-skill  { flex: 2; }
+    .member-field-skill  { flex: 2; min-width: 0; }
     .member-row2 {
       display: flex;
       gap: 12px;
@@ -409,34 +412,94 @@
     .member-field-measure { flex: 1; }
     .member-row2 .del-btn { flex-shrink: 0; margin-bottom: 1px; }
 
-    /* セクションラベル（育成対象者/育成施策 見出し） */
-    .section-label {
-      font-size: 0.82rem;
-      font-weight: 600;
-      color: #374151;
-      margin-bottom: 8px;
+    /* 育成方針エントリカード */
+    .policy-entry-card {
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      padding: 16px 18px;
+      margin-bottom: 12px;
+      background: #fff;
     }
-
-    /* 育成対象者・育成施策 行 */
-    .trainee-row {
+    .policy-entry-header {
       display: flex;
-      gap: 12px;
-      align-items: flex-end;
-      margin-bottom: 8px;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 14px;
     }
-    .trainee-row .field { flex: 1; margin-bottom: 0; }
-    .trainee-row .field:first-child { flex: 0 0 180px; }
-    .trainee-row .del-btn {
-      flex-shrink: 0;
-      align-self: center;
-      margin-top: calc(0.82rem * 1.4 + 5px); /* ラベル行高さ分下げて入力欄中央に揃える */
+    .policy-entry-num {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: #02993B;
+      color: #fff;
+      font-size: 0.75rem;
+      font-weight: 700;
     }
 
-    /* 開発用プレースホルダー */
-    .placeholder-note {
-      color: #6b7280;
-      font-size: 0.85rem;
-      font-style: italic;
+    /* プレビューエリア */
+    .preview-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+    .preview-header h2 { margin-bottom: 0; }
+    .btn-dl {
+      background: #F39346;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      padding: 8px 22px;
+      font-size: 0.88rem;
+      font-family: inherit;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background .15s;
+    }
+    .btn-dl:hover { background: #e07d2f; }
+
+    /* ステップパネル フェードイン */
+    .step-panel {
+      animation: fadeIn .2s ease;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* レスポンシブ（〜640px） */
+    @media (max-width: 640px) {
+      .field-grid {
+        grid-template-columns: 1fr;
+      }
+      .proj-row1,
+      .proj-row2 {
+        flex-wrap: wrap;
+      }
+      .proj-field-name,
+      .proj-field-overview {
+        flex: 1 1 100%;
+      }
+      .proj-field-period,
+      .proj-field-skill {
+        flex: 1 1 100%;
+        min-width: 0;
+      }
+      .member-row1,
+      .member-row2 {
+        flex-wrap: wrap;
+      }
+      .member-field-name,
+      .member-field-skill {
+        flex: 1 1 100%;
+      }
+      .member-field-lv { flex: 1; }
+      .trainee-row { flex-wrap: wrap; }
+      .trainee-row .field:first-child { flex: 1 1 100%; }
+      .card { padding: 20px 16px; margin: 16px 8px; }
     }
   </style>
 </head>
@@ -534,30 +597,8 @@
     <div id="step2" class="step-panel" hidden>
       <div class="card">
         <h2>Step 3 — 育成方針</h2>
-        <div class="field-grid">
-          <div class="field">
-            <label for="f-focus">重点スキル領域</label>
-            <input type="text" id="f-focus" placeholder="例: クラウド、セキュリティ">
-          </div>
-          <div class="field">
-            <label for="f-vision">目指す人材像</label>
-            <input type="text" id="f-vision" placeholder="例: クラウドを自律的に活用できるエンジニア">
-          </div>
-        </div>
-        <div class="field" style="margin-bottom:16px;">
-          <label for="f-gap">現状の課題・ギャップ</label>
-          <textarea id="f-gap" rows="4" placeholder="現状のスキルレベルと目標とのギャップを記入してください"></textarea>
-        </div>
-        <div class="field" style="margin-bottom:20px;">
-          <label for="f-policy">育成方針（自由記述）</label>
-          <textarea id="f-policy" rows="5" placeholder="具体的な育成の方向性や取り組みを記入してください"></textarea>
-        </div>
-
-        <!-- 育成対象者・育成施策（複数行） -->
-        <div class="section-label">育成対象者 / 育成施策</div>
-        <div id="trainee-body"></div>
-        <button class="add-btn" onclick="addTrainee()">＋ 追加</button>
-
+        <div id="policy-body"></div>
+        <button class="add-btn" onclick="addPolicy()">＋ 追加</button>
         <div class="btn-row">
           <button class="btn-sec" onclick="goStep(1)">← 戻る</button>
           <button class="btn-pri" onclick="next(2)">次へ →</button>
@@ -578,9 +619,21 @@
       </div>
     </div>
 
-    <!-- プレビューエリア（タスク3-5） -->
+    <!-- プレビューエリア -->
     <div id="preview-wrap" hidden>
-      <p class="placeholder-note">（プレビューはタスク3-5で追加）</p>
+      <div class="card">
+        <div class="preview-header">
+          <h2>レポートプレビュー</h2>
+          <button class="btn-dl" onclick="download()">HTMLをダウンロード</button>
+        </div>
+        <iframe id="preview-frame"
+                sandbox="allow-same-origin"
+                style="width:100%; border:none; border-radius:6px; display:block;"
+                title="レポートプレビュー"></iframe>
+      </div>
+      <div style="text-align:center; margin-top:8px;">
+        <button class="btn-sec" onclick="goStep(3)">← 入力に戻る</button>
+      </div>
     </div>
 
   </div>
@@ -591,7 +644,7 @@
     // ==============================================
     let currentStep = 0;
     let projIds     = [];
-    let traineeIds  = [];
+    let policyIds   = [];
     let memberIds   = [];
     let reportHTML  = '';
 
@@ -686,6 +739,73 @@
     }
 
     // ==============================================
+    // 育成方針エントリ 追加
+    // ==============================================
+    function addPolicy() {
+      const id   = Date.now();
+      policyIds.push(id);
+      const body = document.getElementById('policy-body');
+      const div  = document.createElement('div');
+      div.id        = 'policy-entry-' + id;
+      div.className = 'policy-entry-card';
+      div.innerHTML = `
+        <div class="policy-entry-header">
+          <span class="policy-entry-num">${policyIds.length}</span>
+          <button class="del-btn" onclick="delRow(policyIds,${id},'policy-entry-${id}')">✕ 削除</button>
+        </div>
+        <div class="field-grid" style="margin-bottom:12px;">
+          <div class="field">
+            <label>重点スキル項目</label>
+            <select id="pfoc${id}">
+              <option value="">-- 選択 --</option>
+              <optgroup label="オープンシステム">
+                <option>オープンシステム・H/W（サーバー）</option>
+                <option>オープンシステム・OS（サーバー）</option>
+                <option>オープンシステム・運用監視システム</option>
+                <option>オープンシステム・セキュリティ（サーバー）</option>
+                <option>オープンシステム・シンクライアント基盤</option>
+                <option>オープンシステム・開発言語</option>
+                <option>オープンシステム・自動化</option>
+                <option>オープンシステム・データ分析</option>
+              </optgroup>
+              <optgroup label="ネットワーク">
+                <option>ネットワーク・WAN/LAN環境</option>
+                <option>ネットワーク・ネットワーク関連システム</option>
+                <option>ネットワーク・セキュリティ（N/W）</option>
+                <option>ネットワーク・ネットワーク管理</option>
+                <option>ネットワーク・ログ管理</option>
+              </optgroup>
+              <optgroup label="コールセンター基盤">
+                <option>コールセンター基盤・音声系システム</option>
+                <option>コールセンター基盤・CTI基盤</option>
+                <option>コールセンター基盤・アプリケーション基盤</option>
+              </optgroup>
+              <optgroup label="クラウド推進">
+                <option>クラウド推進・システム戦略策定</option>
+                <option>クラウド推進・クラウド基盤</option>
+                <option>クラウド推進・AI基盤</option>
+                <option>クラウド推進・アーキテクチャ策定</option>
+              </optgroup>
+            </select>
+          </div>
+          <div class="field">
+            <label>目指す人材像</label>
+            <input type="text" id="pvis${id}" placeholder="例: AWS認定アーキテクト">
+          </div>
+        </div>
+        <div class="field" style="margin-bottom:12px;">
+          <label>現状の課題・ギャップ</label>
+          <textarea id="pgap${id}" rows="3" placeholder="現状のスキルレベルと目標とのギャップを記入してください"></textarea>
+        </div>
+        <div class="field">
+          <label>育成方針</label>
+          <textarea id="ppol${id}" rows="4" placeholder="具体的な育成の方向性や取り組みを記入してください"></textarea>
+        </div>
+      `;
+      body.appendChild(div);
+    }
+
+    // ==============================================
     // メンバー行 追加
     // ==============================================
     function addMember() {
@@ -704,7 +824,37 @@
           </div>
           <div class="field member-field-skill">
             <label>育成対象スキル</label>
-            <input type="text" id="msk${id}" placeholder="例: AWS、Python">
+            <select id="msk${id}">
+              <option value="">-- 選択 --</option>
+              <optgroup label="オープンシステム">
+                <option>オープンシステム・H/W（サーバー）</option>
+                <option>オープンシステム・OS（サーバー）</option>
+                <option>オープンシステム・運用監視システム</option>
+                <option>オープンシステム・セキュリティ（サーバー）</option>
+                <option>オープンシステム・シンクライアント基盤</option>
+                <option>オープンシステム・開発言語</option>
+                <option>オープンシステム・自動化</option>
+                <option>オープンシステム・データ分析</option>
+              </optgroup>
+              <optgroup label="ネットワーク">
+                <option>ネットワーク・WAN/LAN環境</option>
+                <option>ネットワーク・ネットワーク関連システム</option>
+                <option>ネットワーク・セキュリティ（N/W）</option>
+                <option>ネットワーク・ネットワーク管理</option>
+                <option>ネットワーク・ログ管理</option>
+              </optgroup>
+              <optgroup label="コールセンター基盤">
+                <option>コールセンター基盤・音声系システム</option>
+                <option>コールセンター基盤・CTI基盤</option>
+                <option>コールセンター基盤・アプリケーション基盤</option>
+              </optgroup>
+              <optgroup label="クラウド推進">
+                <option>クラウド推進・システム戦略策定</option>
+                <option>クラウド推進・クラウド基盤</option>
+                <option>クラウド推進・AI基盤</option>
+                <option>クラウド推進・アーキテクチャ策定</option>
+              </optgroup>
+            </select>
           </div>
           <div class="field member-field-lv">
             <label>現在 Lv</label>
@@ -722,30 +872,6 @@
           </div>
           <button class="del-btn" onclick="delRow(memberIds,${id},'member-row-${id}')">✕ 削除</button>
         </div>
-      `;
-      body.appendChild(div);
-    }
-
-    // ==============================================
-    // 育成対象者・育成施策 行追加
-    // ==============================================
-    function addTrainee() {
-      const id   = Date.now();
-      traineeIds.push(id);
-      const body = document.getElementById('trainee-body');
-      const div  = document.createElement('div');
-      div.id        = 'trainee-row-' + id;
-      div.className = 'trainee-row';
-      div.innerHTML = `
-        <div class="field">
-          <label>育成対象者（氏名）</label>
-          <input type="text" id="tnm${id}" placeholder="例: 山田 太郎">
-        </div>
-        <div class="field">
-          <label>育成施策</label>
-          <input type="text" id="tms${id}" placeholder="例: AWS資格取得、OJT">
-        </div>
-        <button class="del-btn" onclick="delRow(traineeIds,${id},'trainee-row-${id}')">✕</button>
       `;
       body.appendChild(div);
     }
@@ -778,12 +904,487 @@
       // 案件テーブルの初期行
       addProj();
 
-      // 育成対象者・育成施策の初期行
-      addTrainee();
+      // 育成方針の初期行
+      addPolicy();
 
       // メンバー育成目標の初期行
       addMember();
     })();
+
+    // ==============================================
+    // XSSサニタイズ
+    // ==============================================
+    function escapeHTML(str) {
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
+    // ==============================================
+    // フォームデータ収集
+    // ==============================================
+    function val(id) {
+      const el = document.getElementById(id);
+      return el ? el.value.trim() : '';
+    }
+
+    function collect() {
+      // Step1 基本情報
+      const basic = {
+        year:   val('f-year'),
+        team:   val('f-team'),
+        leader: val('f-leader'),
+        period: val('f-period'),
+        date:   val('f-date'),
+        theme:  val('f-theme'),
+        scope:  val('f-scope'),
+      };
+
+      // Step2 予定案件（空行フィルタリング）
+      const projects = projIds
+        .map(id => ({
+          name:     val('pnm' + id),
+          overview: val('pov' + id),
+          start:    val('pts' + id),
+          end:      val('pte' + id),
+          skill:    val('psk' + id),
+          priority: val('ppr' + id),
+        }))
+        .filter(p => p.name);
+
+      // Step3 育成方針（空エントリはフィルタリング）
+      const policies = policyIds
+        .map(id => ({
+          focus:  val('pfoc' + id),
+          vision: val('pvis' + id),
+          gap:    val('pgap' + id),
+          policy: val('ppol' + id),
+        }))
+        .filter(p => p.focus || p.vision || p.gap || p.policy);
+
+      // Step4 メンバー育成目標（空行フィルタリング）
+      const members = memberIds
+        .map(id => ({
+          name:         val('mnm' + id),
+          skill:        val('msk' + id),
+          currentLevel: parseInt(val('mcl' + id)) || 1,
+          goalLevel:    parseInt(val('mgl' + id)) || 1,
+          measure:      val('mms' + id),
+        }))
+        .filter(m => m.name);
+
+      return { basic, projects, policies, members };
+    }
+
+    // ==============================================
+    // ヘルパー関数群
+    // ==============================================
+
+    // 重要度バッジ HTML
+    function priorityBadge(p) {
+      const map = {
+        '高': { bg: '#fff1f0', color: '#cf1322', border: '#ffa39e' },
+        '中': { bg: '#fffbe6', color: '#d46b08', border: '#ffe58f' },
+        '低': { bg: '#f6ffed', color: '#389e0d', border: '#b7eb8f' },
+      };
+      const s = map[p] || map['中'];
+      return `<span style="display:inline-block;padding:2px 10px;border-radius:20px;font-size:0.75rem;font-weight:600;background:${s.bg};color:${s.color};border:1px solid ${s.border};">${escapeHTML(p)}</span>`;
+    }
+
+    // スキルレベルバー HTML（1〜5段階）
+    function lvBar(lv) {
+      const n = Math.min(5, Math.max(1, parseInt(lv) || 1));
+      let bars = '';
+      for (let i = 1; i <= 5; i++) {
+        const filled = i <= n;
+        bars += `<span style="display:inline-block;width:14px;height:10px;border-radius:2px;margin-right:2px;background:${filled ? '#02993B' : '#e5e7eb'};"></span>`;
+      }
+      return `<span style="display:inline-flex;align-items:center;">${bars}<span style="margin-left:5px;font-size:0.78rem;color:#374151;font-weight:600;">Lv${n}</span></span>`;
+    }
+
+    // 氏名からイニシャル（最大2文字）
+    function initials(name) {
+      const s = String(name).trim();
+      if (!s) return '?';
+      // 姓名スペース区切りなら姓の1文字目 + 名の1文字目
+      const parts = s.split(/[\s　]+/);
+      if (parts.length >= 2) return parts[0][0] + parts[1][0];
+      return s.slice(0, 2);
+    }
+
+    // 氏名から一貫したアバター背景色
+    function avatarColor(name) {
+      const palette = [
+        '#02993B','#0f6e56','#1a7bbf','#7048e8',
+        '#c0392b','#d35400','#16a085','#2980b9',
+      ];
+      let hash = 0;
+      for (let i = 0; i < name.length; i++) hash += name.charCodeAt(i);
+      return palette[hash % palette.length];
+    }
+
+    // ==============================================
+    // レポート生成
+    // ==============================================
+    function generate() {
+      const data  = collect();
+      reportHTML  = buildReport(data);
+
+      const wrap  = document.getElementById('preview-wrap');
+      const frame = document.getElementById('preview-frame');
+      wrap.removeAttribute('hidden');
+      frame.srcdoc = reportHTML;
+      frame.onload = () => {
+        try {
+          frame.style.height = (frame.contentDocument.body.scrollHeight + 40) + 'px';
+        } catch(e) {
+          frame.style.height = '900px';
+        }
+      };
+      wrap.scrollIntoView({ behavior: 'smooth' });
+    }
+
+    // ==============================================
+    // HTMLダウンロード
+    // ==============================================
+    function download() {
+      if (!reportHTML) return;
+      const blob = new Blob([reportHTML], { type: 'text/html;charset=utf-8' });
+      const url  = URL.createObjectURL(blob);
+      const a    = document.createElement('a');
+      a.href     = url;
+      a.download = 'skill-report.html';
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    // ==============================================
+    // レポートHTML組み立て
+    // ==============================================
+    function buildReport(data) {
+      return `<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>スキル分析・育成計画 — ${escapeHTML(data.basic.year)} ${escapeHTML(data.basic.team)}</title>
+<style>${buildReportCSS()}</style>
+</head>
+<body>
+<div class="report">
+${buildCover(data.basic)}
+${buildProjects(data.projects)}
+${buildPolicy(data.policies)}
+${buildMembers(data.members)}
+${buildLevelDef()}
+${buildFooter(data.basic)}
+</div>
+</body>
+</html>`;
+    }
+
+    // ----------------------------------------------
+    // 表紙
+    // ----------------------------------------------
+    function buildCover(b) {
+      const dateStr = b.date
+        ? new Date(b.date).toLocaleDateString('ja-JP', { year: 'numeric', month: 'long', day: 'numeric' })
+        : '';
+      return `
+<div class="cover">
+  <div class="cover-label">IT人財育成ツール</div>
+  <h1>スキル分析・育成計画</h1>
+  <p class="cover-sub">${escapeHTML(b.year || '—')} 年度版</p>
+  <div class="cover-grid">
+    <div class="cover-item">
+      <div class="cover-item-label">部門 / チーム</div>
+      <div class="cover-item-value">${escapeHTML(b.team || '—')}</div>
+    </div>
+    <div class="cover-item">
+      <div class="cover-item-label">リーダー</div>
+      <div class="cover-item-value">${escapeHTML(b.leader || '—')}</div>
+    </div>
+    <div class="cover-item">
+      <div class="cover-item-label">対象期間</div>
+      <div class="cover-item-value">${escapeHTML(b.period || '—')}</div>
+    </div>
+    <div class="cover-item">
+      <div class="cover-item-label">作成日</div>
+      <div class="cover-item-value">${escapeHTML(dateStr || b.date || '—')}</div>
+    </div>
+    ${b.theme ? `<div class="cover-item" style="grid-column:1/-1;">
+      <div class="cover-item-label">重点テーマ</div>
+      <div class="cover-item-value">${escapeHTML(b.theme)}</div>
+    </div>` : ''}
+  </div>
+  ${b.scope ? `<div class="cover-scope">${escapeHTML(b.scope)}</div>` : ''}
+</div>`;
+    }
+
+    // ----------------------------------------------
+    // 予定案件
+    // ----------------------------------------------
+    function buildProjects(projects) {
+      const items = projects.length === 0
+        ? `<p class="empty-note">予定案件の登録はありません。</p>`
+        : projects.map(p => {
+            const period = (p.start || p.end) ? `${p.start || '—'} 〜 ${p.end || '—'}` : '—';
+            return `
+<div class="proj-item">
+  <div class="proj-item-header">
+    <div class="proj-name">${escapeHTML(p.name)}</div>
+    ${priorityBadge(p.priority)}
+  </div>
+  ${p.overview ? `<div class="proj-overview">${escapeHTML(p.overview)}</div>` : ''}
+  <div class="proj-meta">
+    <div class="proj-meta-item"><span class="proj-meta-label">実施期間:</span> ${escapeHTML(period)}</div>
+    ${p.skill ? `<div class="proj-meta-item"><span class="proj-meta-label">スキル領域:</span> ${escapeHTML(p.skill)}</div>` : ''}
+  </div>
+</div>`;
+          }).join('');
+
+      return `
+<div class="section">
+  <div class="section-title"><span class="section-num">1</span>予定案件 一覧</div>
+  <div class="proj-list">${items}</div>
+</div>`;
+    }
+
+    // ----------------------------------------------
+    // 育成方針
+    // ----------------------------------------------
+    function buildPolicy(policies) {
+      if (policies.length === 0) {
+        return `
+<div class="section">
+  <div class="section-title"><span class="section-num">2</span>育成方針</div>
+  <p class="empty-note">育成方針の入力はありません。</p>
+</div>`;
+      }
+
+      const entries = policies.map((p, i) => {
+        const blocks = [
+          p.vision && `<div class="policy-block"><div class="policy-label">目指す人材像</div><div class="policy-value">${escapeHTML(p.vision)}</div></div>`,
+          p.gap    && `<div class="policy-block policy-full"><div class="policy-label">現状の課題・ギャップ</div><div class="policy-value">${escapeHTML(p.gap)}</div></div>`,
+          p.policy && `<div class="policy-block policy-full"><div class="policy-label">育成方針</div><div class="policy-value">${escapeHTML(p.policy)}</div></div>`,
+        ].filter(Boolean).join('');
+        const divider = i > 0 ? 'style="margin-top:28px;padding-top:24px;border-top:1px solid #e5e7eb;"' : '';
+        return `<div ${divider}>
+  ${p.focus ? `<div class="policy-skill-title">${escapeHTML(p.focus)}</div>` : ''}
+  <div class="policy-grid">${blocks}</div>
+</div>`;
+      }).join('');
+
+      return `
+<div class="section">
+  <div class="section-title"><span class="section-num">2</span>育成方針</div>
+  ${entries}
+</div>`;
+    }
+
+    // ----------------------------------------------
+    // メンバー別育成目標
+    // ----------------------------------------------
+    function buildMembers(members) {
+      const cards = members.length === 0
+        ? `<p class="empty-note">メンバーの登録はありません。</p>`
+        : members.map(m => {
+            const color = avatarColor(m.name);
+            const ini   = escapeHTML(initials(m.name));
+            return `
+<div class="member-card">
+  <div class="member-header">
+    <div class="member-avatar" style="background:${color};">${ini}</div>
+    <div>
+      <div class="member-name">${escapeHTML(m.name)}</div>
+      ${m.skill ? `<div class="member-skill">${escapeHTML(m.skill)}</div>` : ''}
+    </div>
+  </div>
+  <div class="member-levels">
+    <div><div class="lv-label">現在レベル</div>${lvBar(m.currentLevel)}</div>
+    <div><div class="lv-label">目標レベル</div>${lvBar(m.goalLevel)}</div>
+  </div>
+  ${m.measure ? `<div class="member-measure-label">主な育成施策</div><div class="member-measure">${escapeHTML(m.measure)}</div>` : ''}
+</div>`;
+          }).join('');
+
+      return `
+<div class="section">
+  <div class="section-title"><span class="section-num">3</span>メンバー別 育成目標</div>
+  <div class="member-grid">${cards}</div>
+</div>`;
+    }
+
+    // ----------------------------------------------
+    // スキルレベル定義
+    // ----------------------------------------------
+    function buildLevelDef() {
+      const defs = [
+        [1, '入門',       '基本的な概念を理解しており、指導のもとで作業できる'],
+        [2, '初級',       '基本的な作業を自立して実施できる。標準的な問題を解決できる'],
+        [3, '中級',       '標準的な業務を自立して遂行できる。後輩への指導ができる'],
+        [4, '上級',       '複雑な問題を解決しチームをリードできる。社内の専門家として機能する'],
+        [5, 'エキスパート', '業界水準で高度な専門知識を持ち、組織横断的に貢献できる'],
+      ];
+      const rows = defs.map(([lv, name, desc]) =>
+        `<tr><td style="text-align:center;"><span class="lv-circle">${lv}</span></td><td><strong>${name}</strong></td><td>${desc}</td></tr>`
+      ).join('');
+
+      return `
+<div class="section">
+  <div class="section-title"><span class="section-num">4</span>スキルレベル定義</div>
+  <table class="data-table">
+    <thead><tr><th style="width:56px;">Lv</th><th style="width:130px;">レベル名</th><th>定義</th></tr></thead>
+    <tbody>${rows}</tbody>
+  </table>
+</div>`;
+    }
+
+    // ----------------------------------------------
+    // フッター
+    // ----------------------------------------------
+    function buildFooter(b) {
+      const now = new Date().toLocaleDateString('ja-JP', { year: 'numeric', month: 'long', day: 'numeric' });
+      return `
+<div class="report-footer">
+  <div>${escapeHTML(b.team || '')}　${escapeHTML(b.leader || '')} 作成</div>
+  <div>生成日時: ${now}</div>
+</div>`;
+    }
+
+    // ==============================================
+    // レポート用CSS
+    // ==============================================
+    function buildReportCSS() {
+      return `
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: "Yu Gothic UI", "Hiragino Sans", "Meiryo", sans-serif;
+  color: #212121; background: #f3f4f6; line-height: 1.6;
+}
+.report { max-width: 900px; margin: 0 auto; background: #fff; }
+
+/* 表紙 */
+.cover {
+  background: #02993B; color: #fff;
+  padding: 56px 48px 48px; position: relative; overflow: hidden;
+}
+.cover::before {
+  content:''; position:absolute; right:-60px; top:-60px;
+  width:240px; height:240px; background:rgba(255,255,255,.07); border-radius:50%;
+}
+.cover::after {
+  content:''; position:absolute; left:-30px; bottom:-40px;
+  width:180px; height:180px; background:rgba(255,255,255,.05); border-radius:50%;
+}
+.cover-label {
+  display:inline-block; font-size:0.72rem; font-weight:600; letter-spacing:.1em;
+  background:rgba(255,255,255,.2); border:1px solid rgba(255,255,255,.4);
+  padding:3px 12px; border-radius:20px; margin-bottom:16px;
+}
+.cover h1 { font-size:2rem; font-weight:700; letter-spacing:.02em; margin-bottom:8px; line-height:1.3; }
+.cover-sub { font-size:1rem; opacity:.85; margin-bottom:32px; }
+.cover-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px 32px; }
+.cover-item { font-size:.88rem; }
+.cover-item-label { opacity:.7; font-size:.75rem; margin-bottom:2px; }
+.cover-item-value { font-weight:600; }
+.cover-scope {
+  margin-top:24px; padding:16px 20px;
+  background:rgba(255,255,255,.12); border-radius:8px;
+  font-size:.85rem; line-height:1.7; white-space:pre-wrap;
+}
+
+/* セクション共通 */
+.section { padding:40px 48px; border-bottom:1px solid #e5e7eb; }
+.section:last-of-type { border-bottom:none; }
+.section-title {
+  display:flex; align-items:center; gap:10px;
+  font-size:1.05rem; font-weight:700; color:#02993B;
+  margin-bottom:24px; padding-bottom:10px; border-bottom:2px solid #e6f5ec;
+}
+.section-num {
+  display:inline-flex; align-items:center; justify-content:center;
+  width:26px; height:26px; background:#02993B; color:#fff;
+  border-radius:50%; font-size:.78rem; font-weight:700; flex-shrink:0;
+}
+.empty-note { color:#9ca3af; font-size:.85rem; font-style:italic; padding:12px 0; }
+.sub-label { font-size:.82rem; font-weight:600; color:#374151; margin-bottom:8px; }
+
+/* 予定案件 */
+.proj-list { display:flex; flex-direction:column; gap:12px; }
+.proj-item {
+  border:1px solid #e5e7eb; border-radius:8px;
+  padding:16px 20px; border-left:4px solid #02993B;
+}
+.proj-item-header { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:6px; gap:12px; }
+.proj-name { font-size:.93rem; font-weight:600; }
+.proj-overview { font-size:.83rem; color:#6b7280; margin-bottom:8px; }
+.proj-meta { display:flex; gap:20px; font-size:.78rem; color:#6b7280; flex-wrap:wrap; }
+.proj-meta-label { font-weight:600; color:#374151; }
+
+/* 育成方針 */
+.policy-grid { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+.policy-block { background:#f9fafb; border-radius:8px; padding:14px 16px; }
+.policy-full { grid-column:1/-1; }
+.policy-skill-title {
+  font-size:.95rem; font-weight:700; color:#212121;
+  padding:6px 12px; margin-bottom:12px;
+  border-left:4px solid #02993B; background:#f9fafb; border-radius:0 6px 6px 0;
+}
+.policy-label { font-size:.73rem; font-weight:600; color:#02993B; letter-spacing:.04em; margin-bottom:5px; }
+.policy-value { font-size:.87rem; line-height:1.7; white-space:pre-wrap; }
+
+/* 共通テーブル */
+.data-table { width:100%; border-collapse:collapse; font-size:.85rem; }
+.data-table th {
+  background:#e6f5ec; color:#02993B; font-weight:600;
+  padding:8px 12px; text-align:left; border-bottom:2px solid #02993B;
+}
+.data-table td { padding:9px 12px; border-bottom:1px solid #f3f4f6; color:#374151; vertical-align:top; }
+.data-table tr:last-child td { border-bottom:none; }
+.data-table tr:nth-child(even) td { background:#f9fafb; }
+.lv-circle {
+  display:inline-flex; align-items:center; justify-content:center;
+  width:26px; height:26px; background:#02993B; color:#fff;
+  border-radius:50%; font-weight:700; font-size:.8rem;
+}
+
+/* メンバーカード */
+.member-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:16px; }
+.member-card { border:1px solid #e5e7eb; border-radius:10px; padding:18px 20px; }
+.member-header { display:flex; align-items:center; gap:12px; margin-bottom:12px; }
+.member-avatar {
+  width:40px; height:40px; border-radius:50%;
+  display:flex; align-items:center; justify-content:center;
+  color:#fff; font-size:.85rem; font-weight:700; flex-shrink:0;
+}
+.member-name { font-size:.93rem; font-weight:700; }
+.member-skill { font-size:.76rem; color:#6b7280; margin-top:1px; }
+.member-levels { display:flex; gap:24px; margin-bottom:12px; }
+.lv-label { font-size:.72rem; color:#6b7280; font-weight:600; margin-bottom:3px; }
+.member-measure-label { font-size:.72rem; color:#02993B; font-weight:600; margin-bottom:4px; }
+.member-measure {
+  font-size:.82rem; color:#374151; background:#f9fafb;
+  border-radius:6px; padding:8px 10px; line-height:1.5;
+}
+
+/* フッター */
+.report-footer {
+  background:#014d20; color:rgba(255,255,255,.75);
+  padding:18px 48px; font-size:.78rem;
+  display:flex; justify-content:space-between; align-items:center;
+}
+
+/* 印刷 */
+@media print {
+  body { background:#fff; }
+  .cover { -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+  .section { page-break-inside:avoid; }
+}`;
+    }
 
     // バリデーション付きステップ進行（タスク4-1で完成）
     function next(n) {
