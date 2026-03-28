@@ -3,7 +3,9 @@
     "allow": [
       "WebFetch(domain:job.mynavi.jp)",
       "Bash(git add:*)",
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "Bash(git -C \"C:\\\\Users\\\\MASAYUKINUKADA\\\\workspace\\\\skill-dev-planning-report\" status)",
+      "Bash(git -C \"C:\\\\Users\\\\MASAYUKINUKADA\\\\workspace\\\\skill-dev-planning-report\" diff --stat)"
     ]
   }
 }
