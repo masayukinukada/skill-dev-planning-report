@@ -470,6 +470,54 @@
       to   { opacity: 1; transform: translateY(0); }
     }
 
+    /* 保存・読み込みツール */
+    .step-nav-tools {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 0 12px;
+      flex-shrink: 0;
+    }
+    .nav-sep {
+      width: 1px;
+      height: 28px;
+      background: #e5e7eb;
+      margin-right: 4px;
+    }
+    .btn-save, .btn-load {
+      border-radius: 5px;
+      padding: 5px 12px;
+      font-size: 0.76rem;
+      font-family: inherit;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background .15s;
+      white-space: nowrap;
+    }
+    .btn-save {
+      background: #e6f5ec;
+      color: #02993B;
+      border: 1px solid #02993B;
+    }
+    .btn-save:hover { background: #d0edda; }
+    .btn-load {
+      background: #f3f4f6;
+      color: #374151;
+      border: 1px solid #d1d5db;
+    }
+    .btn-load:hover { background: #e5e7eb; }
+
+    /* 読み込みエラーバナー */
+    .load-error {
+      margin: 8px 16px 0;
+      padding: 10px 14px;
+      background: #fff5f5;
+      border: 1px solid #feb2b2;
+      border-radius: 6px;
+      color: #c53030;
+      font-size: 0.85rem;
+    }
+
     /* レスポンシブ（〜640px） */
     @media (max-width: 640px) {
       .field-grid {
@@ -531,7 +579,14 @@
         <span class="step-num">4</span>
         <span>育成目標</span>
       </button>
+      <div class="step-nav-tools">
+        <div class="nav-sep"></div>
+        <button class="btn-save" onclick="saveData()">保存</button>
+        <button class="btn-load" onclick="loadData()">読み込み</button>
+      </div>
     </nav>
+    <input type="file" id="load-file-input" accept=".json" style="display:none" onchange="onFileSelected(event)">
+    <div id="load-error" class="load-error" hidden></div>
 
     <!-- Step1: 基本情報 -->
     <div id="step0" class="step-panel">
@@ -653,6 +708,7 @@
     // ==============================================
     function goStep(n) {
       document.getElementById('step' + currentStep).setAttribute('hidden', '');
+      document.getElementById('preview-wrap').setAttribute('hidden', '');
       document.querySelectorAll('.step-btn').forEach((btn, i) => {
         btn.classList.toggle('active', i === n);
       });
@@ -1033,6 +1089,8 @@
       const data  = collect();
       reportHTML  = buildReport(data);
 
+      document.getElementById('step' + currentStep).setAttribute('hidden', '');
+
       const wrap  = document.getElementById('preview-wrap');
       const frame = document.getElementById('preview-frame');
       wrap.removeAttribute('hidden');
@@ -1059,6 +1117,147 @@
       a.download = 'skill-report.html';
       a.click();
       URL.revokeObjectURL(url);
+    }
+
+    // ==============================================
+    // 保存（JSONダウンロード）
+    // ==============================================
+    function saveData() {
+      const data = collect();
+      const payload = {
+        _meta: {
+          version: '1.0',
+          savedAt: new Date().toISOString(),
+          app: 'skill-report-generator'
+        },
+        basic:    data.basic,
+        projects: data.projects,
+        policies: data.policies,
+        members:  data.members,
+      };
+      const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json;charset=utf-8' });
+      const url  = URL.createObjectURL(blob);
+      const a    = document.createElement('a');
+      a.href     = url;
+      a.download = 'skill-report-data.json';
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    // ==============================================
+    // 読み込み（ファイル選択トリガー）
+    // ==============================================
+    function loadData() {
+      document.getElementById('load-file-input').click();
+    }
+
+    function onFileSelected(event) {
+      const file = event.target.files[0];
+      event.target.value = '';  // 同じファイルを再選択できるようにリセット
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        let data;
+        try {
+          data = JSON.parse(e.target.result);
+        } catch (err) {
+          showLoadError('JSONファイルの解析に失敗しました。正しいファイルを選択してください。');
+          return;
+        }
+
+        if (!data._meta || data._meta.app !== 'skill-report-generator') {
+          showLoadError('このアプリ用のデータファイルではありません。');
+          return;
+        }
+        if (data._meta.version !== '1.0') {
+          showLoadError('対応していないバージョンのデータファイルです。');
+          return;
+        }
+        if (!data.basic || !Array.isArray(data.projects) || !Array.isArray(data.policies) || !Array.isArray(data.members)) {
+          showLoadError('データファイルの形式が正しくありません。');
+          return;
+        }
+
+        if (!confirm('現在の入力内容が上書きされます。続行しますか？')) return;
+
+        document.getElementById('load-error').setAttribute('hidden', '');
+        restoreData(data);
+      };
+      reader.readAsText(file);
+    }
+
+    function showLoadError(msg) {
+      const el = document.getElementById('load-error');
+      el.textContent = msg;
+      el.removeAttribute('hidden');
+    }
+
+    // ==============================================
+    // データ復元
+    // ==============================================
+    function restoreData(data) {
+      restoreBasic(data.basic);
+      restoreProjects(data.projects);
+      restorePolicies(data.policies);
+      restoreMembers(data.members);
+      document.querySelectorAll('.step-btn').forEach(btn => btn.classList.remove('done'));
+      goStep(0);
+    }
+
+    function restoreBasic(b) {
+      document.getElementById('f-year').value   = b.year   || '';
+      document.getElementById('f-team').value   = b.team   || '';
+      document.getElementById('f-leader').value = b.leader || '';
+      document.getElementById('f-period').value = b.period || '';
+      document.getElementById('f-date').value   = b.date   || '';
+      document.getElementById('f-theme').value  = b.theme  || '';
+      document.getElementById('f-scope').value  = b.scope  || '';
+    }
+
+    function restoreProjects(projects) {
+      projIds.length = 0;
+      document.getElementById('proj-body').innerHTML = '';
+      if (projects.length === 0) { addProj(); return; }
+      projects.forEach(p => {
+        addProj();
+        const id = projIds[projIds.length - 1];
+        document.getElementById('pnm' + id).value = p.name     || '';
+        document.getElementById('pov' + id).value = p.overview || '';
+        document.getElementById('pts' + id).value = p.start    || '';
+        document.getElementById('pte' + id).value = p.end      || '';
+        document.getElementById('psk' + id).value = p.skill    || '';
+        document.getElementById('ppr' + id).value = p.priority || '中';
+      });
+    }
+
+    function restorePolicies(policies) {
+      policyIds.length = 0;
+      document.getElementById('policy-body').innerHTML = '';
+      if (policies.length === 0) { addPolicy(); return; }
+      policies.forEach(p => {
+        addPolicy();
+        const id = policyIds[policyIds.length - 1];
+        document.getElementById('pfoc' + id).value = p.focus  || '';
+        document.getElementById('pvis' + id).value = p.vision || '';
+        document.getElementById('pgap' + id).value = p.gap    || '';
+        document.getElementById('ppol' + id).value = p.policy || '';
+      });
+    }
+
+    function restoreMembers(members) {
+      memberIds.length = 0;
+      document.getElementById('member-body').innerHTML = '';
+      if (members.length === 0) { addMember(); return; }
+      members.forEach(m => {
+        addMember();
+        const id = memberIds[memberIds.length - 1];
+        document.getElementById('mnm' + id).value = m.name    || '';
+        document.getElementById('msk' + id).value = m.skill   || '';
+        document.getElementById('mcl' + id).value = String(m.currentLevel || 1);
+        document.getElementById('mgl' + id).value = String(m.goalLevel    || 1);
+        document.getElementById('mms' + id).value = m.measure || '';
+      });
     }
 
     // ==============================================

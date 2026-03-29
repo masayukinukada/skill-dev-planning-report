@@ -5,7 +5,8 @@
       "Bash(git add:*)",
       "Bash(git commit:*)",
       "Bash(git -C \"C:\\\\Users\\\\MASAYUKINUKADA\\\\workspace\\\\skill-dev-planning-report\" status)",
-      "Bash(git -C \"C:\\\\Users\\\\MASAYUKINUKADA\\\\workspace\\\\skill-dev-planning-report\" diff --stat)"
+      "Bash(git -C \"C:\\\\Users\\\\MASAYUKINUKADA\\\\workspace\\\\skill-dev-planning-report\" diff --stat)",
+      "Bash(open:*)"
     ]
   }
 }
