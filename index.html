@@ -470,6 +470,72 @@
       to   { opacity: 1; transform: translateY(0); }
     }
 
+    /* リッチテキストエディタ */
+    .rte-wrap {
+      border: 1px solid #d1d5db;
+      border-radius: 6px;
+      overflow: hidden;
+      transition: border-color .15s, box-shadow .15s;
+    }
+    .rte-wrap:focus-within {
+      border-color: #02993B;
+      box-shadow: 0 0 0 3px rgba(2,153,59,.12);
+    }
+    .rte-toolbar {
+      display: flex;
+      align-items: center;
+      gap: 2px;
+      padding: 4px 6px;
+      background: #f9fafb;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .rte-btn {
+      border: 1px solid transparent;
+      border-radius: 3px;
+      background: none;
+      padding: 2px 7px;
+      font-size: 0.78rem;
+      font-family: inherit;
+      cursor: pointer;
+      color: #374151;
+      transition: background .1s;
+      line-height: 1.4;
+    }
+    .rte-btn:hover { background: #e5e7eb; border-color: #d1d5db; }
+    .rte-color-btn {
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      border: 2px solid rgba(0,0,0,.18);
+      cursor: pointer;
+      padding: 0;
+      flex-shrink: 0;
+      transition: transform .1s, border-color .1s;
+    }
+    .rte-color-btn:hover { transform: scale(1.25); border-color: rgba(0,0,0,.45); }
+    .rte-sep-v {
+      width: 1px;
+      height: 16px;
+      background: #d1d5db;
+      margin: 0 4px;
+      flex-shrink: 0;
+    }
+    .rte-body {
+      padding: 8px 10px;
+      font-size: 0.9rem;
+      font-family: inherit;
+      color: #212121;
+      outline: none;
+      line-height: 1.6;
+    }
+    .rte-body ul, .rte-body ol { padding-left: 20px; }
+    .rte-body p { margin: 0; }
+    .rte-body:empty::before {
+      content: attr(data-placeholder);
+      color: #9ca3af;
+      pointer-events: none;
+    }
+
     /* 保存・読み込みツール */
     .step-nav-tools {
       display: flex;
@@ -626,7 +692,26 @@
         </div>
         <div class="field">
           <label for="f-scope">担当領域・役割概要</label>
-          <textarea id="f-scope" rows="4" placeholder="チームの担当領域や役割を記入してください（300文字程度）"></textarea>
+          <div class="rte-wrap">
+            <div class="rte-toolbar">
+              <button type="button" class="rte-btn" onmousedown="event.preventDefault();rteFmt('bold')" title="太字"><b>B</b></button>
+              <button type="button" class="rte-btn" onmousedown="event.preventDefault();rteFmt('italic')" title="斜体"><i>I</i></button>
+              <button type="button" class="rte-btn" onmousedown="event.preventDefault();rteFmt('underline')" title="下線"><u>U</u></button>
+              <span class="rte-sep-v"></span>
+              <button type="button" class="rte-btn" onmousedown="event.preventDefault();rteFmt('insertUnorderedList')" title="箇条書き">・</button>
+              <button type="button" class="rte-btn" onmousedown="event.preventDefault();rteFmt('insertOrderedList')" title="番号リスト">1.</button>
+              <span class="rte-sep-v"></span>
+              <button type="button" class="rte-color-btn" style="background:#212121;" onmousedown="event.preventDefault();rteFmtColor('#212121')" title="黒"></button>
+              <button type="button" class="rte-color-btn" style="background:#c53030;" onmousedown="event.preventDefault();rteFmtColor('#c53030')" title="赤"></button>
+              <button type="button" class="rte-color-btn" style="background:#d46b08;" onmousedown="event.preventDefault();rteFmtColor('#d46b08')" title="オレンジ"></button>
+              <button type="button" class="rte-color-btn" style="background:#02993B;" onmousedown="event.preventDefault();rteFmtColor('#02993B')" title="緑"></button>
+              <button type="button" class="rte-color-btn" style="background:#1a7bbf;" onmousedown="event.preventDefault();rteFmtColor('#1a7bbf')" title="青"></button>
+              <button type="button" class="rte-color-btn" style="background:#6b7280;" onmousedown="event.preventDefault();rteFmtColor('#6b7280')" title="グレー"></button>
+            </div>
+            <div class="rte-body" id="f-scope" contenteditable="true"
+                 data-placeholder="チームの担当領域や役割を記入してください（300文字程度）"
+                 style="min-height:96px;"></div>
+          </div>
         </div>
         <div id="err-step0" class="error-msg" hidden></div>
         <div class="btn-row">
@@ -704,6 +789,13 @@
     let reportHTML  = '';
 
     // ==============================================
+    // ID生成（連番カウンター）
+    // Date.now()は同一ミリ秒内での重複が起きるため使用しない
+    // ==============================================
+    let _idSeq = 0;
+    function genId() { return ++_idSeq; }
+
+    // ==============================================
     // ステップ切り替え（タスク4-1で完成）
     // ==============================================
     function goStep(n) {
@@ -720,7 +812,7 @@
     // 案件行 追加・削除
     // ==============================================
     function addProj() {
-      const id   = Date.now();
+      const id   = genId();
       projIds.push(id);
       const body = document.getElementById('proj-body');
       const div  = document.createElement('div');
@@ -798,7 +890,7 @@
     // 育成方針エントリ 追加
     // ==============================================
     function addPolicy() {
-      const id   = Date.now();
+      const id   = genId();
       policyIds.push(id);
       const body = document.getElementById('policy-body');
       const div  = document.createElement('div');
@@ -851,11 +943,49 @@
         </div>
         <div class="field" style="margin-bottom:12px;">
           <label>現状の課題・ギャップ</label>
-          <textarea id="pgap${id}" rows="3" placeholder="現状のスキルレベルと目標とのギャップを記入してください"></textarea>
+          <div class="rte-wrap">
+            <div class="rte-toolbar">
+              <button type="button" class="rte-btn" onmousedown="event.preventDefault();rteFmt('bold')" title="太字"><b>B</b></button>
+              <button type="button" class="rte-btn" onmousedown="event.preventDefault();rteFmt('italic')" title="斜体"><i>I</i></button>
+              <button type="button" class="rte-btn" onmousedown="event.preventDefault();rteFmt('underline')" title="下線"><u>U</u></button>
+              <span class="rte-sep-v"></span>
+              <button type="button" class="rte-btn" onmousedown="event.preventDefault();rteFmt('insertUnorderedList')" title="箇条書き">・</button>
+              <button type="button" class="rte-btn" onmousedown="event.preventDefault();rteFmt('insertOrderedList')" title="番号リスト">1.</button>
+              <span class="rte-sep-v"></span>
+              <button type="button" class="rte-color-btn" style="background:#212121;" onmousedown="event.preventDefault();rteFmtColor('#212121')" title="黒"></button>
+              <button type="button" class="rte-color-btn" style="background:#c53030;" onmousedown="event.preventDefault();rteFmtColor('#c53030')" title="赤"></button>
+              <button type="button" class="rte-color-btn" style="background:#d46b08;" onmousedown="event.preventDefault();rteFmtColor('#d46b08')" title="オレンジ"></button>
+              <button type="button" class="rte-color-btn" style="background:#02993B;" onmousedown="event.preventDefault();rteFmtColor('#02993B')" title="緑"></button>
+              <button type="button" class="rte-color-btn" style="background:#1a7bbf;" onmousedown="event.preventDefault();rteFmtColor('#1a7bbf')" title="青"></button>
+              <button type="button" class="rte-color-btn" style="background:#6b7280;" onmousedown="event.preventDefault();rteFmtColor('#6b7280')" title="グレー"></button>
+            </div>
+            <div class="rte-body" id="pgap${id}" contenteditable="true"
+                 data-placeholder="現状のスキルレベルと目標とのギャップを記入してください"
+                 style="min-height:72px;"></div>
+          </div>
         </div>
         <div class="field">
           <label>育成方針</label>
-          <textarea id="ppol${id}" rows="4" placeholder="具体的な育成の方向性や取り組みを記入してください"></textarea>
+          <div class="rte-wrap">
+            <div class="rte-toolbar">
+              <button type="button" class="rte-btn" onmousedown="event.preventDefault();rteFmt('bold')" title="太字"><b>B</b></button>
+              <button type="button" class="rte-btn" onmousedown="event.preventDefault();rteFmt('italic')" title="斜体"><i>I</i></button>
+              <button type="button" class="rte-btn" onmousedown="event.preventDefault();rteFmt('underline')" title="下線"><u>U</u></button>
+              <span class="rte-sep-v"></span>
+              <button type="button" class="rte-btn" onmousedown="event.preventDefault();rteFmt('insertUnorderedList')" title="箇条書き">・</button>
+              <button type="button" class="rte-btn" onmousedown="event.preventDefault();rteFmt('insertOrderedList')" title="番号リスト">1.</button>
+              <span class="rte-sep-v"></span>
+              <button type="button" class="rte-color-btn" style="background:#212121;" onmousedown="event.preventDefault();rteFmtColor('#212121')" title="黒"></button>
+              <button type="button" class="rte-color-btn" style="background:#c53030;" onmousedown="event.preventDefault();rteFmtColor('#c53030')" title="赤"></button>
+              <button type="button" class="rte-color-btn" style="background:#d46b08;" onmousedown="event.preventDefault();rteFmtColor('#d46b08')" title="オレンジ"></button>
+              <button type="button" class="rte-color-btn" style="background:#02993B;" onmousedown="event.preventDefault();rteFmtColor('#02993B')" title="緑"></button>
+              <button type="button" class="rte-color-btn" style="background:#1a7bbf;" onmousedown="event.preventDefault();rteFmtColor('#1a7bbf')" title="青"></button>
+              <button type="button" class="rte-color-btn" style="background:#6b7280;" onmousedown="event.preventDefault();rteFmtColor('#6b7280')" title="グレー"></button>
+            </div>
+            <div class="rte-body" id="ppol${id}" contenteditable="true"
+                 data-placeholder="具体的な育成の方向性や取り組みを記入してください"
+                 style="min-height:96px;"></div>
+          </div>
         </div>
       `;
       body.appendChild(div);
@@ -865,7 +995,7 @@
     // メンバー行 追加
     // ==============================================
     function addMember() {
-      const id   = Date.now();
+      const id   = genId();
       memberIds.push(id);
       const body = document.getElementById('member-body');
       const div  = document.createElement('div');
@@ -982,9 +1112,48 @@
     // ==============================================
     // フォームデータ収集
     // ==============================================
+    // リッチテキスト書式コマンド
+    function rteFmt(cmd) {
+      document.execCommand(cmd, false, null);
+    }
+
+    function rteFmtColor(color) {
+      document.execCommand('foreColor', false, color);
+    }
+
+    // RTE の HTML を許可タグのみに絞るサニタイザー（文字色スタイルは保持）
+    function sanitizeRTE(html) {
+      const ALLOWED = new Set(['B','STRONG','I','EM','U','BR','P','UL','OL','LI','DIV','SPAN','FONT']);
+      function walk(node) {
+        Array.from(node.childNodes).forEach(child => {
+          if (child.nodeType !== 1) return;
+          if (ALLOWED.has(child.tagName)) {
+            Array.from(child.attributes).forEach(a => {
+              // SPAN/FONT の color 系属性のみ保持、それ以外は除去
+              const keep =
+                (a.name === 'style' && /^\s*color\s*:/.test(a.value)) ||
+                (a.name === 'color' && child.tagName === 'FONT');
+              if (!keep) child.removeAttribute(a.name);
+            });
+            walk(child);
+          } else {
+            const frag = document.createDocumentFragment();
+            Array.from(child.childNodes).forEach(c => frag.appendChild(c.cloneNode(true)));
+            node.replaceChild(frag, child);
+          }
+        });
+      }
+      const tmp = document.createElement('div');
+      tmp.innerHTML = html;
+      walk(tmp);
+      return tmp.innerHTML;
+    }
+
     function val(id) {
       const el = document.getElementById(id);
-      return el ? el.value.trim() : '';
+      if (!el) return '';
+      if (el.hasAttribute('contenteditable')) return el.innerHTML;
+      return el.value ? el.value.trim() : '';
     }
 
     function collect() {
@@ -999,7 +1168,7 @@
         scope:  val('f-scope'),
       };
 
-      // Step2 予定案件（空行フィルタリング）
+      // Step2 予定案件（空行も含めてすべて保存）
       const projects = projIds
         .map(id => ({
           name:     val('pnm' + id),
@@ -1008,20 +1177,18 @@
           end:      val('pte' + id),
           skill:    val('psk' + id),
           priority: val('ppr' + id),
-        }))
-        .filter(p => p.name);
+        }));
 
-      // Step3 育成方針（空エントリはフィルタリング）
+      // Step3 育成方針（空エントリも含めてすべて保存）
       const policies = policyIds
         .map(id => ({
           focus:  val('pfoc' + id),
           vision: val('pvis' + id),
           gap:    val('pgap' + id),
           policy: val('ppol' + id),
-        }))
-        .filter(p => p.focus || p.vision || p.gap || p.policy);
+        }));
 
-      // Step4 メンバー育成目標（空行フィルタリング）
+      // Step4 メンバー育成目標（空行も含めてすべて保存）
       const members = memberIds
         .map(id => ({
           name:         val('mnm' + id),
@@ -1029,8 +1196,7 @@
           currentLevel: parseInt(val('mcl' + id)) || 1,
           goalLevel:    parseInt(val('mgl' + id)) || 1,
           measure:      val('mms' + id),
-        }))
-        .filter(m => m.name);
+        }));
 
       return { basic, projects, policies, members };
     }
@@ -1212,13 +1378,13 @@
       document.getElementById('f-period').value = b.period || '';
       document.getElementById('f-date').value   = b.date   || '';
       document.getElementById('f-theme').value  = b.theme  || '';
-      document.getElementById('f-scope').value  = b.scope  || '';
+      document.getElementById('f-scope').innerHTML = b.scope  || '';
     }
 
     function restoreProjects(projects) {
       projIds.length = 0;
       document.getElementById('proj-body').innerHTML = '';
-      if (projects.length === 0) { addProj(); return; }
+      if (projects.length === 0) { addProj(); return; }  // 保存データが0件なら初期空行を1件生成
       projects.forEach(p => {
         addProj();
         const id = projIds[projIds.length - 1];
@@ -1240,8 +1406,8 @@
         const id = policyIds[policyIds.length - 1];
         document.getElementById('pfoc' + id).value = p.focus  || '';
         document.getElementById('pvis' + id).value = p.vision || '';
-        document.getElementById('pgap' + id).value = p.gap    || '';
-        document.getElementById('ppol' + id).value = p.policy || '';
+        document.getElementById('pgap' + id).innerHTML = p.gap    || '';
+        document.getElementById('ppol' + id).innerHTML = p.policy || '';
       });
     }
 
@@ -1319,7 +1485,7 @@ ${buildFooter(data.basic)}
       <div class="cover-item-value">${escapeHTML(b.theme)}</div>
     </div>` : ''}
   </div>
-  ${b.scope ? `<div class="cover-scope">${escapeHTML(b.scope)}</div>` : ''}
+  ${b.scope ? `<div class="cover-scope">${sanitizeRTE(b.scope)}</div>` : ''}
 </div>`;
     }
 
@@ -1327,9 +1493,10 @@ ${buildFooter(data.basic)}
     // 予定案件
     // ----------------------------------------------
     function buildProjects(projects) {
-      const items = projects.length === 0
+      const filled = projects.filter(p => p.name);
+      const items = filled.length === 0
         ? `<p class="empty-note">予定案件の登録はありません。</p>`
-        : projects.map(p => {
+        : filled.map(p => {
             const period = (p.start || p.end) ? `${p.start || '—'} 〜 ${p.end || '—'}` : '—';
             return `
 <div class="proj-item">
@@ -1356,6 +1523,8 @@ ${buildFooter(data.basic)}
     // 育成方針
     // ----------------------------------------------
     function buildPolicy(policies) {
+      const filled = policies.filter(p => p.focus || p.vision || p.gap || p.policy);
+      policies = filled;
       if (policies.length === 0) {
         return `
 <div class="section">
@@ -1367,8 +1536,8 @@ ${buildFooter(data.basic)}
       const entries = policies.map((p, i) => {
         const blocks = [
           p.vision && `<div class="policy-block"><div class="policy-label">目指す人材像</div><div class="policy-value">${escapeHTML(p.vision)}</div></div>`,
-          p.gap    && `<div class="policy-block policy-full"><div class="policy-label">現状の課題・ギャップ</div><div class="policy-value">${escapeHTML(p.gap)}</div></div>`,
-          p.policy && `<div class="policy-block policy-full"><div class="policy-label">育成方針</div><div class="policy-value">${escapeHTML(p.policy)}</div></div>`,
+          p.gap    && `<div class="policy-block policy-full"><div class="policy-label">現状の課題・ギャップ</div><div class="policy-value">${sanitizeRTE(p.gap)}</div></div>`,
+          p.policy && `<div class="policy-block policy-full"><div class="policy-label">育成方針</div><div class="policy-value">${sanitizeRTE(p.policy)}</div></div>`,
         ].filter(Boolean).join('');
         const divider = i > 0 ? 'style="margin-top:28px;padding-top:24px;border-top:1px solid #e5e7eb;"' : '';
         return `<div ${divider}>
@@ -1388,9 +1557,10 @@ ${buildFooter(data.basic)}
     // メンバー別育成目標
     // ----------------------------------------------
     function buildMembers(members) {
-      const cards = members.length === 0
+      const filled = members.filter(m => m.name);
+      const cards = filled.length === 0
         ? `<p class="empty-note">メンバーの登録はありません。</p>`
-        : members.map(m => {
+        : filled.map(m => {
             const color = avatarColor(m.name);
             const ini   = escapeHTML(initials(m.name));
             return `
@@ -1493,7 +1663,7 @@ body {
 .cover-scope {
   margin-top:24px; padding:16px 20px;
   background:rgba(255,255,255,.12); border-radius:8px;
-  font-size:.85rem; line-height:1.7; white-space:pre-wrap;
+  font-size:.85rem; line-height:1.7;
 }
 
 /* セクション共通 */
@@ -1534,7 +1704,9 @@ body {
   border-left:4px solid #02993B; background:#f9fafb; border-radius:0 6px 6px 0;
 }
 .policy-label { font-size:.73rem; font-weight:600; color:#02993B; letter-spacing:.04em; margin-bottom:5px; }
-.policy-value { font-size:.87rem; line-height:1.7; white-space:pre-wrap; }
+.policy-value { font-size:.87rem; line-height:1.7; }
+.policy-value ul, .policy-value ol { padding-left:18px; }
+.cover-scope ul, .cover-scope ol { padding-left:18px; }
 
 /* 共通テーブル */
 .data-table { width:100%; border-collapse:collapse; font-size:.85rem; }
